@@ -160,6 +160,41 @@ server <- function(input, output, session) {
 shinyApp(ui = ui, server = server)
 ```
 
+The `api_client.R` file contains the function to fetch data from the API.
+
+```R
+get_data <- function(uri, token = NULL) {
+  library(httr)
+  library(jsonlite)
+
+  showNotification("Updating data...", type = "message")
+
+  headers <- c(`Content-Type` = "application/json", `Accept` = "application/json")
+  if (!is.null(token)) {
+    headers <- c(headers, Authorization = paste("Bearer", token))
+  }
+
+  response <- GET(url = uri, add_headers(.headers = headers))
+
+  if (http_error(response)) {
+    stop(sprintf("Error en la petición: %s", status_code(response)))
+  }
+
+  content_text <- content(response, "text", encoding = "UTF-8")
+  df <- fromJSON(content_text, flatten = TRUE)
+
+  if (is.list(df) && "data" %in% names(df)) {
+    df <- df$data
+  }
+
+  if (!is.data.frame(df)) {
+    df <- as.data.frame(df)
+  }
+
+  return(df)
+}
+```
+
 We're also using dotenv to manage environment variables. Create a `.env` file in the root of your project with the following content:
 
 ```dotenv
