@@ -1,0 +1,14 @@
+version: '3.4'
+
+services:
+  frontend:
+    image: frontend:latest
+    command: Rscript main.R 3838 0.0.0.0 FALSE
+    ports:
+      - 3838:3838
+
+  backend:
+    image: backend:latest
+    command: gunicorn -w 4 -b 0.0.0.0:8000 app:app
+    ports:
+      - 5000:5000
